@@ -18,10 +18,21 @@ encrStatus()
 	elif [ ! -f $file ]; then
 		echo "Error: $file could not be found." >&2
 		return 3
-	elif [ "$(head -n 1 $file)" = "unencrypted" ]; then
+	fi
+
+	# file is good
+	topper="$(head -n 1 $file)"
+
+	if [ "$topper" = "unencrypted" ]; then
 		return 1
-	elif [ "$(head -n 1 $file)" = "harapelcgrq" ]; then
+	elif [ "$topper" = "harapelcgrq" ]; then
+		# spells "unencrypted" in rot13
 		return 0 # encrypted
+	elif [ "$topper" = "<!DOCTYPE html>" ]; then
+		return 1
+	elif [ "$topper" = "<!DOCTYPE html>" ]; then
+		return 0
+	
 	
 	else
 		return 2
