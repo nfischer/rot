@@ -1,6 +1,7 @@
 #!/bin/bash
 
-# A simple rot13 encrypter/decrypter with some testing to see if a file is encrypted or decrypted
+# A simple rot13 encrypter/decrypter with some testing to see if a file is
+# encrypted or decrypted
 
 encrStatus()
 {
@@ -30,10 +31,8 @@ encrStatus()
 		return 0 # encrypted
 	elif [ "$topper" = "<!DOCTYPE html>" ]; then
 		return 1
-	elif [ "$topper" = "<!DOCTYPE html>" ]; then
-		return 0
 	
-	
+	# default case
 	else
 		return 2
 	fi
@@ -41,22 +40,30 @@ encrStatus()
 }
 
 
-
 ## main ##
+
+exiter=0 # exit status
+
+if [ $# = 0 ]; then
+	echo "No files passed as arguments." >&2
+	exit 1
+fi
 
 # encrypt each file, check if valid
 for inFile in $*; do
 	if [ -z "$inFile" ]; then
 		echo "Error: empty string passed as file name." >&2
+		exiter=2
 		continue # skip this file
 	elif [ ! -f $inFile ]; then
-		echo "Error: $file could not be found." >&2
+		echo "Error: $inFile could not be found." >&2
+		exiter=2
 		continue # skip this file
 	fi
 
 	outFile="$inFile.r13"
+	# encryption is simple
 	tr [a-zA-Z] [n-za-mN-ZA-M] < $inFile > $outFile
-	# Thanks, tr!
 	
 	# check encryption status
 	encrStatus $inFile
@@ -71,17 +78,19 @@ for inFile in $*; do
 
 	if [ $inEncr = 3 ] || [ $outEncr = 3 ]; then
 		# error
+		exiter=2
 		continue
-	elif [ $inEncr = 1 ] && [ $outEncr = 0 ]; then
+	elif [ $inFile = 1 ]; then # easier to check for unencrypted
 		echo "$inFile is now encrypted"
-	elif [ $inEncr = 0 ] && [ $outEncr = 1 ]; then
+		# inFile is the proper name of outFile
+	elif [ $outEncr = 1 ]; then
 		echo "$inFile is no longer encrypted"
 	fi
 	
-	# clean up
+	## clean up ##
 	rm $inFile
 	mv $outFile $inFile # rename
 
 done
 
-exit 0
+exit $exiter
