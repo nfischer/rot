@@ -80,7 +80,7 @@ for inFile in $*; do
 		# error
 		exiter=2
 		continue
-	elif [ $inFile = 1 ]; then # easier to check for unencrypted
+	elif [ $inEncr = 1 ]; then # easier to check for unencrypted
 		echo "$inFile is now encrypted"
 		# inFile is the proper name of outFile
 	elif [ $outEncr = 1 ]; then
