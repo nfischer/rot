@@ -2,6 +2,7 @@
 
 # A simple rot13 encrypter/decrypter with some testing to see if a file is
 # encrypted or decrypted
+# All output is to stderr except for the encryption of the stdin input
 
 encrStatus()
 {
@@ -39,15 +40,15 @@ encrStatus()
 	# guaranteed to have already returned
 }
 
+trEncrypt()
+{
+	# encryption is simple
+	tr [a-zA-Z] [n-za-mN-ZA-M] # stdin and stdout
+}
 
 ## main ##
 
 exiter=0 # exit status
-
-if [ $# = 0 ]; then
-	echo "No files passed as arguments." >&2
-	exit 1
-fi
 
 # encrypt each file, check if valid
 for inFile in $*; do
@@ -62,8 +63,9 @@ for inFile in $*; do
 	fi
 
 	outFile="$inFile.r13"
-	# encryption is simple
-	tr [a-zA-Z] [n-za-mN-ZA-M] < $inFile > $outFile
+
+	#tr [a-zA-Z] [n-za-mN-ZA-M] < $inFile > $outFile
+	trEncrypt < $inFile > $outFile
 	
 	# check encryption status
 	encrStatus $inFile
@@ -81,10 +83,10 @@ for inFile in $*; do
 		exiter=2
 		continue
 	elif [ $inEncr = 1 ]; then # easier to check for unencrypted
-		echo "$inFile is now encrypted"
+		echo "$inFile is now encrypted" >&2
 		# inFile is the proper name of outFile
 	elif [ $outEncr = 1 ]; then
-		echo "$inFile is no longer encrypted"
+		echo "$inFile is no longer encrypted" >&2
 	fi
 	
 	## clean up ##
@@ -92,5 +94,14 @@ for inFile in $*; do
 	mv $outFile $inFile # rename
 
 done
+
+# process stdin to stdout
+if [ ! -t 0 ]; then # There is stdin
+	trEncrypt # to stdout
+elif [ $# = 0 ]; then # no stdin, no files
+	echo "Error: you did not enter any input." >&2
+	echo "Please pass filenames as arguments or send input to stdin" >&2
+	exit 1
+fi
 
 exit $exiter
