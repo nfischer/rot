@@ -1,3 +1,8 @@
+## for test files ##
 test*
 .test*
 *.diff
+
+## for vim ##
+*.swp
+*~
