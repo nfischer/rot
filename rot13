@@ -56,6 +56,10 @@ for inFile in $*; do
 		echo "Error: empty string passed as file name." >&2
 		exiter=2
 		continue # skip this file
+    elif [ -d "$inFile" ]; then
+        echo "Error: $inFile is a directory." >&2
+        exiter=2
+        continue
 	elif [ ! -f $inFile ]; then
 		echo "Error: $inFile could not be found." >&2
 		exiter=2
