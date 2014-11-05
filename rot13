@@ -6,44 +6,44 @@
 
 encrStatus()
 {
-	# returns the following:
-	# 0: The file is encrypted
-	# 1: The file is NOT encrypted
-	# 2: Cannot determine
-	# 3: Internal error
-	
-	file="$1"
+    # returns the following:
+    # 0: The file is encrypted
+    # 1: The file is NOT encrypted
+    # 2: Cannot determine
+    # 3: Internal error
 
-	if [ -z "$file" ]; then
-		echo "Error: empty string passed as file name." >&2
-		return 3
-	elif [ ! -f $file ]; then
-		echo "Error: $file could not be found." >&2
-		return 3
-	fi
+    file="$1"
 
-	# file is good
-	topper="$(head -n 1 $file)"
+    if [ -z "$file" ]; then
+        echo "Error: empty string passed as file name." >&2
+        return 3
+    elif [ ! -f $file ]; then
+        echo "Error: $file could not be found." >&2
+        return 3
+    fi
 
-	if [ "$topper" = "unencrypted" ]; then
-		return 1
-	elif [ "$topper" = "harapelcgrq" ]; then
-		# spells "unencrypted" in rot13
-		return 0 # encrypted
-	elif [ "$topper" = "<!DOCTYPE html>" ]; then
-		return 1
-	
-	# default case
-	else
-		return 2
-	fi
-	# guaranteed to have already returned
+    # file is good
+    topper="$(head -n 1 $file)"
+
+    if [ "$topper" = "unencrypted" ]; then
+        return 1
+    elif [ "$topper" = "harapelcgrq" ]; then
+        # spells "unencrypted" in rot13
+        return 0 # encrypted
+    elif [ "$topper" = "<!DOCTYPE html>" ]; then
+        return 1
+
+    # default case
+    else
+        return 2
+    fi
+    # guaranteed to have already returned
 }
 
 trEncrypt()
 {
-	# encryption is simple
-	tr [a-zA-Z] [n-za-mN-ZA-M] # stdin and stdout
+    # encryption is simple
+    tr [a-zA-Z] [n-za-mN-ZA-M] # stdin and stdout
 }
 
 ## main ##
@@ -52,60 +52,60 @@ exiter=0 # exit status
 
 # encrypt each file, check if valid
 for inFile in $*; do
-	if [ -z "$inFile" ]; then
-		echo "Error: empty string passed as file name." >&2
-		exiter=2
-		continue # skip this file
+    if [ -z "$inFile" ]; then
+        echo "Error: empty string passed as file name." >&2
+        exiter=2
+        continue # skip this file
     elif [ -d "$inFile" ]; then
         echo "Error: $inFile is a directory." >&2
         exiter=2
         continue
-	elif [ ! -f $inFile ]; then
-		echo "Error: $inFile could not be found." >&2
-		exiter=2
-		continue # skip this file
-	fi
+    elif [ ! -f $inFile ]; then
+        echo "Error: $inFile could not be found." >&2
+        exiter=2
+        continue # skip this file
+    fi
 
-	outFile="$inFile.r13"
+    outFile="$inFile.r13"
 
-	#tr [a-zA-Z] [n-za-mN-ZA-M] < $inFile > $outFile
-	trEncrypt < $inFile > $outFile
-	
-	# check encryption status
-	encrStatus $inFile
-	inEncr=$?
-	encrStatus $outFile
-	outEncr=$?
+    #tr [a-zA-Z] [n-za-mN-ZA-M] < $inFile > $outFile
+    trEncrypt < $inFile > $outFile
 
-	# 0: The file is encrypted
-	# 1: The file is NOT encrypted
-	# 2: Cannot determine
-	# 3: Internal error
+    # check encryption status
+    encrStatus $inFile
+    inEncr=$?
+    encrStatus $outFile
+    outEncr=$?
 
-	if [ $inEncr = 3 ] || [ $outEncr = 3 ]; then
-		# error
-		exiter=2
-		continue
-	elif [ $inEncr = 1 ]; then # easier to check for unencrypted
-		echo "$inFile is now encrypted" >&2
-		# inFile is the proper name of outFile
-	elif [ $outEncr = 1 ]; then
-		echo "$inFile is no longer encrypted" >&2
-	fi
-	
-	## clean up ##
-	rm $inFile
-	mv $outFile $inFile # rename
+    # 0: The file is encrypted
+    # 1: The file is NOT encrypted
+    # 2: Cannot determine
+    # 3: Internal error
+
+    if [ $inEncr = 3 ] || [ $outEncr = 3 ]; then
+        # error
+        exiter=2
+        continue
+    elif [ $inEncr = 1 ]; then # easier to check for unencrypted
+        echo "$inFile is now encrypted" >&2
+        # inFile is the proper name of outFile
+    elif [ $outEncr = 1 ]; then
+        echo "$inFile is no longer encrypted" >&2
+    fi
+
+    ## clean up ##
+    rm $inFile
+    mv $outFile $inFile # rename
 
 done
 
 # process stdin to stdout
 if [ ! -t 0 ]; then # There is stdin
-	trEncrypt # to stdout
+    trEncrypt # to stdout
 elif [ $# = 0 ]; then # no stdin, no files
-	echo "Error: you did not enter any input." >&2
-	echo "Please pass filenames as arguments or send input to stdin" >&2
-	exit 1
+    echo "Error: you did not enter any input." >&2
+    echo "Please pass filenames as arguments or send input to stdin" >&2
+    exit 1
 fi
 
 exit $exiter
